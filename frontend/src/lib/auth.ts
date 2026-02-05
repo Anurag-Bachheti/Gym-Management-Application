@@ -15,16 +15,14 @@ export function getDashboardRoute(role: string) {
       return "/admin";
 
     case "MANAGER":
+    case "GYM_MANAGER":
       return "/manager";
 
     case "TRAINER":
       return "/trainer";
 
     case "RECEPTIONIST":
-      return "/receptionist";
-
-    case "MEMBER":
-      return "/member";
+      return "/reception";
 
     default:
       return "/login";

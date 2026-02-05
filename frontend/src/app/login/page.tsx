@@ -44,7 +44,7 @@ export default function LoginPage() {
       // redirect based on role
       router.push(getDashboardRoute(data.user.role));
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
