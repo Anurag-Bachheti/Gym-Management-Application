@@ -24,6 +24,9 @@ export function getDashboardRoute(role: string) {
     case "RECEPTIONIST":
       return "/reception";
 
+    case "MEMBER":
+      return "/member";
+
     default:
       return "/login";
   }

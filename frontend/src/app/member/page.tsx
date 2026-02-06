@@ -41,24 +41,25 @@ export default function MemberDashboard() {
       </div>
     );
   }
-
-  return (
-    <div>
-      <div>
-        <h1>
-          Welcome, <span>{member.name}</span>
+return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-6 space-y-6">
+        <h1 className="text-3xl font-bold">
+          Welcome, <span className="text-blue-600">{member.name}</span>
         </h1>
-      </div>
 
-      <div>
-        <p className="text-sm text-gray-500">Email</p>
-        <p className="text-lg font-medium">{member.email}</p>
-      </div>
+        <div className="border-t pt-4 space-y-3">
+          <div>
+            <p className="text-sm text-gray-500">Email</p>
+            <p className="text-lg font-medium">{member.email}</p>
+          </div>
 
-      <div>
-        <p className="text-sm text-gray-500">Role</p>
-        <p className="text-lg font-medium">Member</p>
+          <div>
+            <p className="text-sm text-gray-500">Role</p>
+            <p className="text-lg font-medium">Member</p>
+          </div>
+        </div>
       </div>
     </div>
-  )
+  );
 }

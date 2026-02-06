@@ -23,3 +23,23 @@ export const signup = async (req: Request, res: Response) => {
         user: result,
     });
 };
+
+export const getMe = async (req: any, res: Response) => {
+    try {
+        const user = await AuthService.getUserById(req.user._id);
+        res.json({
+            success: true,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error: any) {
+        res.status(404).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
