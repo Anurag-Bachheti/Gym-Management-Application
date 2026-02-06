@@ -11,3 +11,15 @@ export const login = async (req: Request, res: Response) => {
         ...result,
     });
 };
+
+export const signup = async (req: Request, res: Response) => {
+    const { name, email, password, plan } = req.body;
+
+    const result = await AuthService.signup({ name, email, password, plan });
+
+    res.status(201).json({
+        success: true,
+        message: "Signup successful",
+        user: result,
+    });
+};

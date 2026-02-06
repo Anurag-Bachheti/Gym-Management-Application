@@ -8,10 +8,10 @@ export default function LandingPage() {
 
             <div className="flex gap-4">
                 <Link href="/login" className="px-4 py-2 bg-black text-white rounded">
-                    Login
+                    Existing User
                 </Link>
                 <Link href="/signup" className="px-4 py-2 border rounded">
-                    Sign Up
+                    New User
                 </Link>
             </div>
         </main>

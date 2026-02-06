@@ -1,4 +1,5 @@
 import User from "../models/User";
+import Member from "../models/Member";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -29,5 +30,43 @@ export const login = async (email: string, password: string) => {
             role: user.role,
             email: user.email,
         },
+    };
+};
+
+export const signup = async (userData: any) => {
+    const { name, email, password, plan } = userData;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        throw new Error("User already exists with this email");
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create User
+    const user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        role: "MEMBER",
+    });
+
+    // Create Member
+    await Member.create({
+        user: user._id,
+        name,
+        email,
+        // we can add plan logic here if Member model supported it, 
+        // for now just creating the basic member record
+    });
+
+    return {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
     };
 };
