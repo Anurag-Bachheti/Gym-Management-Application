@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import PasswordInput from "../components/PasswordInput";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -110,13 +113,9 @@ export default function SignupPage() {
           <label className="block text-sm font-medium mb-1">
             Create Password
           </label>
-          <input
-            type="password"
-            name="password"
-            placeholder="••••••••"
-            value={form.password}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
+          <PasswordInput
+            value={password}
+            onChange={setPassword}
           />
         </div>
 
@@ -125,13 +124,9 @@ export default function SignupPage() {
           <label className="block text-sm font-medium mb-1">
             Confirm Password
           </label>
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="••••••••"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
+          <PasswordInput
+            value={confirmPassword}
+            onChange={setConfirmPassword}
           />
         </div>
 

@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
-// import { Eye, EyeOff } from "lucide-react"; // Removed as not installed
+import PasswordInput from "../components/PasswordInput";
 
 function ResetPasswordForm() {
     const router = useRouter();
@@ -16,15 +16,9 @@ function ResetPasswordForm() {
         password: "",
         confirmPassword: "",
     });
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -87,49 +81,31 @@ function ResetPasswordForm() {
                         className="w-full border px-4 py-2 rounded-md focus:ring-2 focus:ring-black outline-none font-mono text-center text-lg tracking-widest"
                         placeholder="000000"
                         value={formData.otp}
-                        onChange={handleChange}
+                        onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
                         required
                     />
                 </div>
 
+                {/* New Password */}
                 <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                    <input
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        className="w-full border px-4 py-2 rounded-md focus:ring-2 focus:ring-black outline-none"
-                        placeholder="••••••••"
+                    <PasswordInput
                         value={formData.password}
-                        onChange={handleChange}
-                        required
+                        onChange={(value) =>
+                            setFormData({ ...formData, password: value })
+                        }
                     />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-[34px] text-gray-400 hover:text-gray-600"
-                    >
-                        {showPassword ? "👁️" : "🙈"}
-                    </button>
                 </div>
 
+                {/* Confirm Password */}
                 <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                    <input
-                        name="confirmPassword"
-                        type={showConfirmPassword ? "text" : "password"}
-                        className="w-full border px-4 py-2 rounded-md focus:ring-2 focus:ring-black outline-none"
-                        placeholder="••••••••"
+                    <PasswordInput
                         value={formData.confirmPassword}
-                        onChange={handleChange}
-                        required
+                        onChange={(value) =>
+                            setFormData({ ...formData, confirmPassword: value })
+                        }
                     />
-                    <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-[34px] text-gray-400 hover:text-gray-600"
-                    >
-                        {showConfirmPassword ? "👁️" : "🙈"}
-                    </button>
                 </div>
 
                 <button
