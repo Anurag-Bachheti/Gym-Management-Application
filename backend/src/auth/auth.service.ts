@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 export const login = async (email: string, password: string) => {
     const user = await User.findOne({ email }).select("+password");
 
-    if (!user || !user.isActive) {
+    if (!user || user.isActive === false) {
         throw new Error("Invalid credentials");
     }
 

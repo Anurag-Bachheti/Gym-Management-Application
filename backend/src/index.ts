@@ -1,13 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+dotenv.config();
 
 import connectDB from './config/db';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import memberRoutes from './routes/members';
-
-dotenv.config();
 
 connectDB();
 

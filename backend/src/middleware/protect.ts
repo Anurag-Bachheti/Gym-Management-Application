@@ -21,7 +21,7 @@ export const protect = async (
 
     const user = await User.findById(decoded.userId);
 
-    if (!user || !user.isActive) {
+    if (!user || user.isActive === false) {
         return res.status(401).json({ message: "User not found" });
     }
 

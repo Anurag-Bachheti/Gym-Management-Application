@@ -9,22 +9,34 @@ import User from "../models/User";
 export const createUser = async (req: Request, res: Response) => {
   const { name, email, password, role } = req.body;
 
-  if (!name || !email || !password || !role) {
-    return res.status(400).json({ message: "All fields required" });
+  if (!name || !email || !role) {
+    return res.status(400).json({ message: "All fields required (name, email, role)" });
   }
+
+  const userRole = role.toUpperCase();
 
   const exists = await User.findOne({ email });
   if (exists) {
     return res.status(409).json({ message: "User already exists" });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  let finalPassword = password;
+  let temporaryPassword = null;
+
+  if (!finalPassword) {
+    // Generate random 12-char password
+    temporaryPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4);
+    finalPassword = temporaryPassword;
+  }
+
+  const hashedPassword = await bcrypt.hash(finalPassword, 10);
 
   const user = await User.create({
     name,
     email,
     password: hashedPassword,
-    role,
+    role: userRole,
+    mustChangePassword: !!temporaryPassword,
   });
 
   res.status(201).json({
@@ -34,7 +46,9 @@ export const createUser = async (req: Request, res: Response) => {
       name: user.name,
       role: user.role,
       email: user.email,
+      mustChangePassword: user.mustChangePassword,
     },
+    temporaryPassword, // Only present if generated
   });
 };
 

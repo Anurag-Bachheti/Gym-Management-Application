@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getAllUsers } from "@/lib/api/users";
+import api from "../../lib/api";
 
 type User = {
   _id: string;
@@ -23,6 +24,7 @@ export default function AdminDashboard() {
     email: "",
     role: "",
   });
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -52,27 +54,39 @@ export default function AdminDashboard() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
-    if (editingUserId) {
-      setUsers((prev) =>
-        prev.map((user) =>
-          user._id === editingUserId ? { ...user, ...formData } : user
-        )
-      );
-    } else {
-      setUsers((prev) => [
-        ...prev,
-        {
-          _id: Date.now().toString(),
-          ...formData,
-        },
-      ]);
-    }
+  const handleSubmit = async () => {
+    try {
+      if (editingUserId) {
+        // UPDATE USER (PUT)
+        const res = await api.put(`/users/${editingUserId}`, formData);
 
-    setFormData({ name: "", email: "", role: "" });
-    setEditingUserId(null);
-    setShowForm(false);
+        setUsers((prev) =>
+          prev.map((user) =>
+            user._id === editingUserId ? res.data : user
+          )
+        );
+      } else {
+        // CREATE USER (POST)
+        const res = await api.post("/users", formData);
+
+        if (res.data.temporaryPassword) {
+          setTempPassword(res.data.temporaryPassword);
+        }
+
+        setUsers((prev) => [...prev, res.data.user || res.data]);
+      }
+
+      // Reset UI state
+      setFormData({ name: "", email: "", role: "" });
+      setEditingUserId(null);
+      setShowForm(false);
+
+    } catch (error) {
+      console.error("User submit failed:", error);
+      alert("Something went wrong");
+    }
   };
+
 
   const handleEdit = (user: User) => {
     setFormData({
@@ -130,9 +144,11 @@ export default function AdminDashboard() {
             className="w-full border rounded px-3 py-2"
           >
             <option value="">Select role</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="user">User</option>
+            <option value="SUPER_ADMIN">Admin</option>
+            <option value="GYM_MANAGER">Manager</option>
+            <option value="TRAINER">Trainer</option>
+            <option value="RECEPTIONIST">Receptionist</option>
+            <option value="MEMBER">Member</option>
           </select>
 
           <button
@@ -141,6 +157,20 @@ export default function AdminDashboard() {
           >
             {editingUserId ? "Update User" : "Create User"}
           </button>
+
+          {tempPassword && (
+            <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+              <p className="font-bold">User Created Successfully!</p>
+              <p>Temporary Password: <span className="font-mono bg-white px-2 py-1 rounded border">{tempPassword}</span></p>
+              <p className="text-sm mt-2 font-semibold text-red-600 italic">Please share this password with the user. They will need to change it on their first login.</p>
+              <button
+                onClick={() => setTempPassword(null)}
+                className="mt-2 text-xs underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
         </div>
       )
       }
