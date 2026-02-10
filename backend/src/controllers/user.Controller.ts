@@ -90,3 +90,16 @@ export const deactivateUser = async (req: Request, res: Response) => {
 
   res.json({ message: "User deactivated" });
 };
+
+// Delete User (Temporary)
+export const deleteUser = async (req: Request, res: Response) => {
+  const user = await User.findById(req.params.id);
+
+  if(!user){
+    return res.status(404).json({ message : "User not found" });
+  }
+
+  await user.deleteOne();
+
+  res.json({ message: "User permanently deleted" });
+}

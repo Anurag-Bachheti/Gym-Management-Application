@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Member from "../models/Member";
+import { request } from "http";
 
 /**
  * CREATE MEMBER
@@ -75,3 +76,15 @@ export const updateMember = async (req: Request, res: Response) => {
 
   res.json(member);
 };
+
+export const deleteMember = async (req: Request, res: Response) => {
+  const member = await Member.findById(req.params.id);
+
+  if(!member){
+    return res.status(404).json({ message : "Member not found" });
+  }
+
+  await member.deleteOne();
+
+  res.json({ message: "Member permanently deleted" });
+}

@@ -4,6 +4,7 @@ import {
   getUsers,
   getUserById,
   deactivateUser,
+  deleteUser,
 } from "../controllers/user.Controller";
 import { protect } from "../middleware/protect";
 import { authorize } from "../middleware/authorize";
@@ -15,6 +16,7 @@ router.use(protect);
 router.post("/", authorize("SUPER_ADMIN", "GYM_MANAGER"), createUser);
 router.get("/", authorize("SUPER_ADMIN", "GYM_MANAGER"), getUsers);
 router.get("/:id", authorize("SUPER_ADMIN"), getUserById);
-router.delete("/:id", authorize("SUPER_ADMIN"), deactivateUser);
+router.patch("/:id", authorize("SUPER_ADMIN"), deactivateUser);
+router.delete("/:id", authorize("SUPER_ADMIN"), deleteUser);
 
 export default router;
