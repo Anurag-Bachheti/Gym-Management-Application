@@ -7,10 +7,14 @@ import { request } from "http";
  */
 export const createMember = async (req: Request, res: Response) => {
   try {
-    const { name, email, phone, gender, dob, emergencyContact, user } = req.body;
+    const { name, email, phone, gender, dob, emergencyContact, user, plan } = req.body;
 
     if (!name || !email || !phone) {
       return res.status(400).json({ message: "Name, email and phone are required" });
+    }
+ 
+    if (!plan) {
+      return res.status(400).json({ message: "Plan is required" });
     }
 
     // Optional: normalize email even more
@@ -24,6 +28,7 @@ export const createMember = async (req: Request, res: Response) => {
       dob,
       emergencyContact,
       user,
+      plan,
     });
 
     return res.status(201).json(member);

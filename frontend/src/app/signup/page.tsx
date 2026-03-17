@@ -18,8 +18,8 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // const [password, setPassword] = useState("");
+  // const [confirmPassword, setConfirmPassword] = useState("");
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -114,8 +114,8 @@ export default function SignupPage() {
             Create Password
           </label>
           <PasswordInput
-            value={password}
-            onChange={setPassword}
+            value={form.password}
+            onChange={(val) => setForm({ ...form, password: val })}
           />
         </div>
 
@@ -125,8 +125,10 @@ export default function SignupPage() {
             Confirm Password
           </label>
           <PasswordInput
-            value={confirmPassword}
-            onChange={setConfirmPassword}
+            value={form.confirmPassword}
+            onChange={(val) =>
+              setForm({ ...form, confirmPassword: val })
+            }
           />
         </div>
 

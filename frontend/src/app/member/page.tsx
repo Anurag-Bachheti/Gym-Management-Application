@@ -6,6 +6,7 @@ import api from '@/lib/api';
 type Member = {
   name: string;
   email: string;
+  plan: string;
 }
 
 export default function MemberDashboard() {
@@ -13,20 +14,20 @@ export default function MemberDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchProfile(){
-      try{
+    async function fetchProfile() {
+      try {
         const res = await api.get("/auth/me");
         setMember(res.data.user);
-      }catch(err){
+      } catch (err) {
         console.error("Failed to load member profile");
-      }finally{
+      } finally {
         setLoading(false);
       }
     }
     fetchProfile();
   }, [])
 
-   if (loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         Loading dashboard...
@@ -34,14 +35,21 @@ export default function MemberDashboard() {
     );
   }
 
-   if (!member) {
+  if (!member) {
     return (
       <div className="min-h-screen flex items-center justify-center text-red-500">
         Failed to load member data
       </div>
     );
   }
-return (
+
+  function formatPlan(plan: string) {
+    return plan
+      .replace("_", " ")
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-6 space-y-6">
         <h1 className="text-3xl font-bold">
@@ -52,6 +60,11 @@ return (
           <div>
             <p className="text-sm text-gray-500">Email</p>
             <p className="text-lg font-medium">{member.email}</p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">Plan</p>
+            <p className="text-lg font-medium">{member.plan ? formatPlan(member.plan) : "N/A"}</p>
           </div>
 
           <div>

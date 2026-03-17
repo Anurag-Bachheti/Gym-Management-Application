@@ -22,6 +22,8 @@ export const login = async (email: string, password: string) => {
     user.lastLogin = new Date();
     await user.save();
 
+    const member = await Member.findOne({ user: user._id });
+
     return {
         token,
         user: {
@@ -29,6 +31,7 @@ export const login = async (email: string, password: string) => {
             name: user.name,
             role: user.role,
             email: user.email,
+            plan: member?.plan || null,
         },
     };
 };
@@ -59,8 +62,7 @@ export const signup = async (userData: any) => {
         user: user._id,
         name,
         email,
-        // we can add plan logic here if Member model supported it, 
-        // for now just creating the basic member record
+        plan,
     });
 
     return {
@@ -76,5 +78,13 @@ export const getUserById = async (userId: string) => {
     if (!user) {
         throw new Error("User not found");
     }
-    return user;
+    const member = await Member.findOne({ user: user._id });
+
+    return {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        plan: member?.plan || null,
+    }
 };

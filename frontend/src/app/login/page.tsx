@@ -11,6 +11,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [plan, setPlan] = useState("basic");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,6 +32,7 @@ export default function LoginPage() {
       const res = await api.post("/auth/login", {
         email,
         password,
+        plan,
       });
 
       const data = res.data;

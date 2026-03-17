@@ -31,6 +31,7 @@ export const signup = async (req: Request, res: Response) => {
         success: true,
         message: "Signup successful",
         user: result,
+        plan: plan,
     });
 };
 
@@ -40,10 +41,11 @@ export const getMe = async (req: any, res: Response) => {
         res.json({
             success: true,
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                plan: user.plan,
             },
         });
     } catch (error: any) {

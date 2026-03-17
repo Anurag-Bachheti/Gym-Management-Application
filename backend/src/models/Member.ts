@@ -5,6 +5,8 @@ const memberSchema = new mongoose.Schema(
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false }, // member may NOT have login
         name: { type: String, required: true, trim: true },
         email: { type: String, required: true, lowercase: true, trim: true},
+        role: { type: String, default: "MEMBER" },
+        plan: { type: String, required: true },
         phone: String,
         gender: String,
         dob: Date,
