@@ -7,7 +7,7 @@ import User from "../models/User";
  * SUPER_ADMIN, GYM_MANAGER
  */
 export const createUser = async (req: Request, res: Response) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, plan } = req.body;
 
   if (!name || !email || !role) {
     return res.status(400).json({ message: "All fields required (name, email, role)" });
@@ -36,6 +36,7 @@ export const createUser = async (req: Request, res: Response) => {
     email,
     password: hashedPassword,
     role: userRole,
+    plan,
     mustChangePassword: !!temporaryPassword,
   });
 
@@ -46,6 +47,7 @@ export const createUser = async (req: Request, res: Response) => {
       name: user.name,
       role: user.role,
       email: user.email,
+      plan: user.plan,
       mustChangePassword: user.mustChangePassword,
     },
     temporaryPassword, // Only present if generated
@@ -95,8 +97,8 @@ export const deactivateUser = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
   const user = await User.findById(req.params.id);
 
-  if(!user){
-    return res.status(404).json({ message : "User not found" });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
   }
 
   await user.deleteOne();
