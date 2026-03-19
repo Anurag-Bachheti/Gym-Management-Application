@@ -7,6 +7,7 @@ import connectDB from './config/db';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import memberRoutes from './routes/members';
+import planRoutes from './routes/plan.routes';
 
 connectDB();
 
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use("/api/users", userRoutes);
 app.use('/api/members', memberRoutes);
+app.use('/api/plans', planRoutes);
 
 // error fallback
 app.use((err: any, req: any, res: any, next: any) => {

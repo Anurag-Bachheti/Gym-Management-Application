@@ -36,11 +36,6 @@ const userSchema = new mongoose.Schema(
             required: true,
         },
 
-        plan: {
-            type: String,
-            required: false,
-        },
-
         isActive: {
             type: Boolean,
             default: true,

@@ -45,7 +45,7 @@ export const getMe = async (req: any, res: Response) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                plan: user.plan,
+                // plan: user.plan,
             },
         });
     } catch (error: any) {

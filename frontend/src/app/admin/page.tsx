@@ -4,6 +4,8 @@ import { useState } from "react";
 import { getAllUsers } from "@/lib/api/users";
 import api from "../../lib/api";
 import DashboardLayout from "../components/DashboardLayout";
+import { CreatePlanModal } from "@/app/components/plans/CreatePlanModal";
+import { PlanList } from "@/app/components/plans/PlanList";
 
 type User = {
   _id: string;
@@ -19,6 +21,8 @@ export default function AdminDashboard() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -168,6 +172,30 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
+
+        {/* Plan Section */}
+        <div className="bg-white p-6 rounded-lg shadow space-y-4">
+          <h2 className="text-lg font-medium">Membership Plans</h2>
+
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-black text-white px-4 py-2 rounded"
+          >
+            Create Plan
+          </button>
+          <div>
+            <button>Show All Plans</button>
+          </div>
+
+          {showModal && (
+            <CreatePlanModal
+              onClose={() => setShowModal(false)}
+              onSuccess={() => setRefresh(!refresh)}
+            />
+          )}
+
+          <PlanList key={refresh} />
+        </div>
 
         <button
           onClick={handleViewUsers}
