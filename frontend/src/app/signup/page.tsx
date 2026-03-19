@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import PasswordInput from "../components/PasswordInput";
+import { getPlans } from "@/services/plan.service";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -18,8 +19,7 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  // const [password, setPassword] = useState("");
-  // const [confirmPassword, setConfirmPassword] = useState("");
+  const [plans, setPlans] = useState<any[]>([]);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -66,6 +66,21 @@ export default function SignupPage() {
       setLoading(false);
     }
   }
+  
+  useEffect(() => {
+  const fetchPlans = async () => {
+    try {
+      const res = await getPlans();
+      if (res.success) {
+        setPlans(res.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch plans", err);
+    }
+  };
+
+  fetchPlans();
+}, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -144,9 +159,11 @@ export default function SignupPage() {
             className="w-full border px-3 py-2 rounded"
           >
             <option value="">Select a plan</option>
-            <option value="1_month">1 Month – ₹1000</option>
-            <option value="3_months">3 Months – ₹2500</option>
-            <option value="6_months">6 Months – ₹5000</option>
+            {plans.map((plan) => (
+              <option key={plan._id} value={plan._id}>
+                {plan.name || `${plan.duration} Months`} – ₹{plan.price}
+              </option>
+            ))}
           </select>
         </div>
 

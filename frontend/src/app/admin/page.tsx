@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getAllUsers } from "@/lib/api/users";
 import api from "../../lib/api";
 import DashboardLayout from "../components/DashboardLayout";
 import { CreatePlanModal } from "@/app/components/plans/CreatePlanModal";
 import { PlanList } from "@/app/components/plans/PlanList";
+import { getPlans } from "@/services/plan.service";
 
 type User = {
   _id: string;
@@ -23,11 +24,13 @@ export default function AdminDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const [plans, setPlans] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     role: "",
+    plan: "",
   });
   const [tempPassword, setTempPassword] = useState<string | null>(null);
 
@@ -90,6 +93,21 @@ export default function AdminDashboard() {
     setShowForm(true);
   };
 
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await getPlans();
+        if (res.success) {
+          setPlans(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch plans", err);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
   return (
     <DashboardLayout title="Admin Dashboard">
       <div className="p-6 space-y-8 max-w-3xl">
@@ -140,6 +158,22 @@ export default function AdminDashboard() {
               <option value="TRAINER">Trainer</option>
               <option value="RECEPTIONIST">Receptionist</option>
               <option value="MEMBER">Member</option>
+            </select>
+
+            <select
+              name="plan"
+              value={formData.plan}
+              onChange={handleChange}
+              disabled={formData.role !== "MEMBER"}
+              className={`w-full border rounded px-3 py-2 ${formData.role !== "MEMBER" ? "bg-gray-100 cursor-not-allowed" : ""}`}
+            >
+              <option value="">Membership Plan</option>
+
+              {plans.map((plan) => (
+                <option key={plan._id} value={plan._id}>
+                  {plan.name || `${plan.duration} Month${plan.duration > 1 ? "s" : ""}`} – ₹{plan.price}
+                </option>
+              ))}
             </select>
 
             <button

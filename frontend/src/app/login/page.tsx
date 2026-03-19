@@ -101,7 +101,7 @@ export default function LoginPage() {
             href="/forgot-password"
             className="text-sm text-blue-600 hover:underline"
           >
-            Forgot Password?
+            Forgot / Generate New Password ?
           </a>
         </div>
       </form>
