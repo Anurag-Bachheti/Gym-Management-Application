@@ -15,8 +15,8 @@ router.use(protect);
 
 router.post("/", authorize("SUPER_ADMIN", "GYM_MANAGER", "RECEPTIONIST"), createMember);
 router.get("/", authorize("SUPER_ADMIN", "GYM_MANAGER", "RECEPTIONIST"), getMembers);
-router.get("/:id", authorize("SUPER_ADMIN", "GYM_MANAGER"), getMemberById);
-router.put("/:id", authorize("SUPER_ADMIN", "GYM_MANAGER"), updateMember);
+router.get("/:id", authorize("SUPER_ADMIN", "GYM_MANAGER", "RECEPTIONIST"), getMemberById);
+router.put("/:id", authorize("SUPER_ADMIN", "GYM_MANAGER", "RECEPTIONIST"), updateMember);
 router.delete("/:id", authorize("SUPER_ADMIN"), deleteMember);
 
 export default router;

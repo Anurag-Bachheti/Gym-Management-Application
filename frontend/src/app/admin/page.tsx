@@ -78,7 +78,7 @@ export default function AdminDashboard() {
       }
 
       // Reset UI state
-      setFormData({ name: "", email: "", role: "" });
+      setFormData({ name: "", email: "", role: "", plan: "" });
       setEditingUserId(null);
       setShowForm(false);
     } catch (error) {
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
   };
 
   const handleEdit = (user: User) => {
-    setFormData({ name: user.name, email: user.email, role: user.role });
+    setFormData({ name: user.name, email: user.email, role: user.role, plan: user.plan });
     setEditingUserId(user._id);
     setShowForm(true);
   };
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
           onClick={() => {
             setShowForm(true);
             setEditingUserId(null);
-            setFormData({ name: "", email: "", role: "" });
+            setFormData({ name: "", email: "", role: "", plan: "" });
           }}
         >
           Create User

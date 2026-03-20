@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import DashboardLayout from "../components/DashboardLayout";
+import Records from "../components/reception/Records";
 
 type Receptionist = {
   name: string;
@@ -13,6 +14,7 @@ type Receptionist = {
 export default function ReceptionDashboard() {
   const [receptionist, setReceptionist] = useState<Receptionist | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showRecords, setShowRecords] = useState(false);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -71,6 +73,17 @@ export default function ReceptionDashboard() {
               <p className="text-lg font-medium">{formatRole(receptionist.role)}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      <button
+        onClick={() => setShowRecords(true)}
+        className="bg-black text-white px-4 py-2 rounded"
+      >Show Records</button>
+
+      {showRecords && (
+        <div className="p-6">
+          <Records />
         </div>
       )}
     </DashboardLayout>
