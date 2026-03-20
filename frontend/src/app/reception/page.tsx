@@ -76,16 +76,30 @@ export default function ReceptionDashboard() {
         </div>
       )}
 
-      <button
-        onClick={() => setShowRecords(true)}
-        className="bg-black text-white px-4 py-2 rounded"
-      >Show Records</button>
-
-      {showRecords && (
-        <div className="p-6">
-          <Records />
-        </div>
-      )}
+      <div className="flex flex-col items-center py-4 space-y-4">
+        {!showRecords ? (
+          <button
+            onClick={() => setShowRecords(true)}
+            className="bg-black text-white px-8 py-3 text-lg font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-colors"
+          >
+            Show Records
+          </button>
+        ) : (
+          <div className="w-full space-y-4">
+            <div className="flex justify-center">
+               <button
+                disabled
+                className="bg-gray-400 text-white px-8 py-3 text-lg font-semibold rounded-lg cursor-default"
+              >
+                Show Records
+              </button>
+            </div>
+            <div className="p-6 border-t">
+              <Records />
+            </div>
+          </div>
+        )}
+      </div>
     </DashboardLayout>
   );
 }

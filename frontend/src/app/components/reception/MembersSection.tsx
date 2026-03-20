@@ -10,8 +10,8 @@ export default function MembersSection({ onBack }: any) {
     useEffect(() => {
         async function fetchMembers() {
             try {
-                const res = await api.get("/users");
-                // The /api/users endpoint returns an array directly
+                const res = await api.get("/members");
+                // The /api/members endpoint returns an array directly
                 setMembers(Array.isArray(res.data) ? res.data : []);
             } catch (err) {
                 console.error("Failed to load members")
@@ -24,16 +24,18 @@ export default function MembersSection({ onBack }: any) {
         name: "",
         email: "",
         role: "MEMBER",
+        phone: "",
+        plan: "",
     });
 
     const handleCreateMember = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.post("/users", formData);
+            await api.post("/members", formData);
             alert("Member enrolled successfully");
             setView("list");
             // Refresh list
-            const res = await api.get("/users");
+            const res = await api.get("/members");
             setMembers(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error("Enrollment failed", err);
@@ -41,9 +43,23 @@ export default function MembersSection({ onBack }: any) {
         }
     };
 
+    const [plans, setPlans] = useState<any[]>([]);
+
+    useEffect(() => {
+        async function fetchPlans() {
+            try {
+                const res = await api.get("/plans");
+                setPlans(Array.isArray(res.data) ? res.data : []);
+            } catch (err) {
+                console.error("Failed to load plans")
+            }
+        }
+        fetchPlans()
+    }, [])
+
     return (
         <div className="space-y-4">
-            <button onClick={onBack} className="text-sm underline">
+            <button onClick={onBack} className="text-sm underline text-blue-600 hover:text-blue-800">
                 ← Back
             </button>
 
@@ -69,16 +85,24 @@ export default function MembersSection({ onBack }: any) {
                 <div>
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="font-semibold text-xl">Members List</h2>
-                        <button onClick={() => setView(null)} className="text-xs">Close List</button>
+                        <button onClick={() => setView(null)} className="text-xs text-gray-500 hover:underline">Close List</button>
                     </div>
-                    <div className="bg-white rounded border divide-y">
+                    <div className="bg-white rounded border divide-y overflow-hidden">
                         {members.length === 0 ? (
-                            <p className="p-4 text-gray-500">No members found</p>
+                            <p className="p-4 text-gray-500 italic">No members found</p>
                         ) : (
-                            members.filter((u: any) => u.role === "MEMBER").map((member: any) => (
-                                <div key={member._id} className="p-3">
-                                    <p className="font-medium">{member.name}</p>
-                                    <p className="text-sm text-gray-500">{member.email}</p>
+                            members.map((member: any) => (
+                                <div key={member._id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                    <div className="space-y-1">
+                                        <p className="font-bold text-gray-900">{member.name}</p>
+                                        <p className="text-sm text-gray-500 italic">{member.email}</p>
+                                        <p className="text-sm text-gray-600">{member.phone}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded inline-block uppercase tracking-wider">
+                                            {member.plan || "No Plan"}
+                                        </span>
+                                    </div>
                                 </div>
                             ))
                         )}
@@ -100,17 +124,48 @@ export default function MembersSection({ onBack }: any) {
                                 placeholder="John Doe"
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Email Address</label>
-                            <input
-                                required
-                                type="email"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full border rounded px-3 py-2"
-                                placeholder="john@example.com"
-                            />
+
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Email Address</label>
+                                <input
+                                    required
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="w-full border rounded px-3 py-2"
+                                    placeholder="john@example.com"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Phone Number</label>
+                                <input
+                                    required
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    className="w-full border rounded px-3 py-2"
+                                    placeholder="Phone"
+                                />
+                            </div>
                         </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Membership Plan</label>
+                            <select
+                                required
+                                value={formData.plan}
+                                onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
+                                className="w-full border rounded px-3 py-2"
+                            >
+                                <option value="">Select a Plan</option>
+                                {plans.map((p) => (
+                                    <option key={p._id} value={p.name || p._id}>
+                                        {p.name || `${p.duration} Month`} - ₹{p.price}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className="pt-2">
                             <button
                                 type="submit"

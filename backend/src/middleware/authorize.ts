@@ -10,7 +10,7 @@ export const authorize = (...roles: string[]) => {
 };
 
 export const isReceptionist = (req: any, res: any, next: any) => {
-  if (req.user?.role !== "RECEPTIONIST") {
+  if (!["RECEPTIONIST", "SUPER_ADMIN", "GYM_MANAGER"].includes(req.user?.role)) {
     return res.status(403).json({
       message: "Access denied",
     });

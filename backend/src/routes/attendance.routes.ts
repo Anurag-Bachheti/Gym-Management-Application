@@ -6,8 +6,11 @@ import {
 } from "../controllers/attendance.controller";
 
 import { isReceptionist } from "../middleware/authorize";
+import { protect } from "../middleware/protect";
 
 const router = express.Router();
+
+router.use(protect);
 
 // Member attendance
 router.post("/member", isReceptionist, markMemberAttendance);
