@@ -1,5 +1,5 @@
 import express from 'express';
-import { createPlan, getPlans } from '../controllers/plan.Controller';
+import { createPlan, getPlans, updatePlan, deletePlan } from '../controllers/plan.Controller';
 import { authorize } from '../middleware/authorize';
 import { protect } from '../middleware/protect';
 
@@ -10,5 +10,7 @@ router.post('/', protect, authorize('SUPER_ADMIN'), createPlan);
 
 // Get all plans (Accessible by Admin, Manager, and Receptionist)
 router.get('/', protect, authorize('SUPER_ADMIN', 'GYM_MANAGER', 'RECEPTIONIST'), getPlans);
+router.put('/:id', protect, authorize('SUPER_ADMIN'), updatePlan);
+router.delete('/:id', protect, authorize('SUPER_ADMIN'), deletePlan);
 
 export default router;

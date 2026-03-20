@@ -59,7 +59,14 @@ export default function MembersSection({ onBack }: any) {
 
     return (
         <div className="space-y-4">
-            <button onClick={onBack} className="text-sm underline text-blue-600 hover:text-blue-800">
+            <button onClick={() => {
+                if (view) {
+                    setView(null); // go back one step
+                } else {
+                    onBack(); // go to parent
+                }
+            }}
+                className="text-sm underline text-blue-600 hover:text-blue-800">
                 ← Back
             </button>
 
@@ -98,10 +105,55 @@ export default function MembersSection({ onBack }: any) {
                                         <p className="text-sm text-gray-500 italic">{member.email}</p>
                                         <p className="text-sm text-gray-600">{member.phone}</p>
                                     </div>
-                                    <div className="text-right">
-                                        <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded inline-block uppercase tracking-wider">
+                                    <div className="flex flex-col items-end gap-2">
+                                        <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                                             {member.plan || "No Plan"}
                                         </span>
+                                        <div className="flex gap-2">
+                                            <button 
+                                                disabled={member.attendanceToday}
+                                                onClick={async () => {
+                                                    try {
+                                                        await api.post("/attendance/member", { userId: member._id });
+                                                        setMembers((prev: any[]) =>
+                                                            prev.map((m) =>
+                                                                m._id === member._id ? { ...m, attendanceToday: true } : m
+                                                            )
+                                                        );
+                                                    } catch (err: any) {
+                                                        alert(err.response?.data?.message || "Failed to mark attendance");
+                                                    }
+                                                }}
+                                                className={`text-xs px-3 py-1.5 rounded font-semibold shadow-sm transition-all active:scale-95 ${
+                                                    member.attendanceToday
+                                                        ? "bg-gray-400 text-white cursor-not-allowed"
+                                                        : "bg-green-600 text-white hover:bg-green-700"
+                                                }`}
+                                            >
+                                                {member.attendanceToday ? "Present" : "Present"}
+                                            </button>
+                                            <button 
+                                                onClick={async () => {
+                                                    try {
+                                                        await api.post("/attendance/member/undo", { userId: member._id });
+                                                        setMembers((prev: any[]) =>
+                                                            prev.map((m) =>
+                                                                m._id === member._id ? { ...m, attendanceToday: false } : m
+                                                            )
+                                                        );
+                                                    } catch (err: any) {
+                                                        alert(err.response?.data?.message || "Failed to mark absent");
+                                                    }
+                                                }}
+                                                className={`text-xs px-3 py-1.5 rounded font-semibold shadow-sm transition-all active:scale-95 ${
+                                                    !member.attendanceToday
+                                                        ? "bg-gray-100 text-gray-400 border border-gray-200"
+                                                        : "bg-red-600 text-white hover:bg-red-700"
+                                                }`}
+                                            >
+                                                Absent
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))

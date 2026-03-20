@@ -4,7 +4,8 @@ const attendanceSchema = new mongoose.Schema(
     {
         user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Member",
+            // ref: "User",
         },
 
         // Walk in fields
@@ -13,9 +14,11 @@ const attendanceSchema = new mongoose.Schema(
 
         VisitorType: {
             type: String,
-            enum: ["Member", "WALK_IN"],
+            enum: ["MEMBER", "WALK_IN"],
             required: true,
         },
+
+        date: String, // format: YYYY-MM-DD for easier daily check-in search
 
         checkInTime: {
             type: Date,

@@ -1,9 +1,7 @@
-"use client";
+import { useEffect, useState } from "react";
+import { createPlan, updatePlan } from "@/services/plan.service";
 
-import { useState } from "react";
-import { createPlan } from "@/services/plan.service";
-
-export const CreatePlanModal = ({ onClose, onSuccess }: any) => {
+export const CreatePlanModal = ({ onClose, onSuccess, planData }: any) => {
     const [form, setForm] = useState({
         name: "",
         description: "",
@@ -14,25 +12,45 @@ export const CreatePlanModal = ({ onClose, onSuccess }: any) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    useEffect(() => {
+        if (planData) {
+            setForm({
+                name: planData.name || "",
+                description: planData.description || "",
+                duration: planData.durationInMonths?.toString() || "",
+                price: planData.price?.toString() || "",
+                features: planData.features ? planData.features.join(", ") : "",
+            });
+        }
+    }, [planData]);
+
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
+        const payload = {
+            name: form.name,
+            description: form.description,
+            duration: Number(form.duration),
+            price: Number(form.price),
+            features: form.features.split(',').map(f => f.trim()).filter(f => f !== ""),
+        };
+
         try {
-            const res = await createPlan({
-                name: form.name,
-                description: form.description,
-                duration: Number(form.duration),
-                price: Number(form.price),
-                features: form.features.split(',').map(f => f.trim()).filter(f => f !== ""),
-            });
+            let res;
+            if (planData?._id) {
+                res = await updatePlan(planData._id, payload);
+            } else {
+                res = await createPlan(payload);
+            }
+            
             if (res.success) {
                 onSuccess();
                 onClose();
             }
         } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to create plan");
+            setError(err.response?.data?.message || `Failed to ${planData ? 'update' : 'create'} plan`);
         } finally {
             setLoading(false);
         }
@@ -42,7 +60,7 @@ export const CreatePlanModal = ({ onClose, onSuccess }: any) => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
                 <div className="p-6">
-                    <h2 className="text-xl font-bold mb-4">Create New Plan</h2>
+                    <h2 className="text-xl font-bold mb-4">{planData ? 'Edit' : 'Create New'} Plan</h2>
                     {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
@@ -112,19 +130,19 @@ export const CreatePlanModal = ({ onClose, onSuccess }: any) => {
                         </div>
 
                         <div className="flex justify-end gap-2 pt-4">
-                            <button 
+                            <button
                                 type="button"
                                 onClick={onClose}
                                 className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
                             >
                                 Cancel
                             </button>
-                            <button 
+                            <button
                                 type="submit"
                                 disabled={loading}
                                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                             >
-                                {loading ? "Creating..." : "Create Plan"}
+                                {loading ? (planData ? 'Updating...' : 'Creating...') : (planData ? 'Update Plan' : 'Create Plan')}
                             </button>
                         </div>
                     </form>

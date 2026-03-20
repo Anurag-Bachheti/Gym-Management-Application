@@ -55,7 +55,14 @@ export default function WalkInSection({ onBack }: any) {
 
     return (
         <div className="space-y-4">
-            <button onClick={onBack} className="text-sm underline text-blue-600 hover:text-blue-800">
+            <button onClick={() => {
+                if (view) {
+                    setView(null); // go back one step
+                } else {
+                    onBack(); // go to parent
+                }
+            }}
+                className="text-sm underline text-blue-600 hover:text-blue-800">
                 ← Back
             </button>
 

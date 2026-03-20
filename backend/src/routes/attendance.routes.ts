@@ -1,6 +1,7 @@
 import express from "express";
 import {
     markMemberAttendance,
+    deleteMemberAttendance,
     createWalkIn,
     getWalkIns,
 } from "../controllers/attendance.controller";
@@ -12,8 +13,10 @@ const router = express.Router();
 
 router.use(protect);
 
-// Member attendance
-router.post("/member", isReceptionist, markMemberAttendance);
+// Member attendance (Accessible by Admin, Manager, Receptionist, AND Member)
+router.post("/member", markMemberAttendance);
+router.post("/member/undo", isReceptionist, deleteMemberAttendance);
+
 
 // Walk-in
 router.post("/walkin", isReceptionist, createWalkIn);

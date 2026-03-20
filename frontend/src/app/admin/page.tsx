@@ -13,6 +13,7 @@ type User = {
   name: string;
   email: string;
   role: string;
+  plan?: string;
 };
 
 export default function AdminDashboard() {
@@ -23,6 +24,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [refresh, setRefresh] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
 
@@ -88,9 +90,15 @@ export default function AdminDashboard() {
   };
 
   const handleEdit = (user: User) => {
-    setFormData({ name: user.name, email: user.email, role: user.role, plan: user.plan });
+    setFormData({ name: user.name, email: user.email, role: user.role, plan: user.plan || "" });
     setEditingUserId(user._id);
     setShowForm(true);
+    
+  };
+
+  const handleEditPlan = (plan: any) => {
+    setSelectedPlan(plan);
+    setShowModal(true);
   };
 
   useEffect(() => {
@@ -106,7 +114,7 @@ export default function AdminDashboard() {
     };
 
     fetchPlans();
-  }, []);
+  }, [refresh]);
 
   return (
     <DashboardLayout title="Admin Dashboard">
@@ -171,7 +179,7 @@ export default function AdminDashboard() {
 
               {plans.map((plan) => (
                 <option key={plan._id} value={plan._id}>
-                  {plan.name || `${plan.duration} Month${plan.duration > 1 ? "s" : ""}`} – ₹{plan.price}
+                  {plan.name || `${plan.durationInMonths} Month${plan.durationInMonths > 1 ? "s" : ""}`} – ₹{plan.price}
                 </option>
               ))}
             </select>
@@ -212,7 +220,10 @@ export default function AdminDashboard() {
           <h2 className="text-lg font-medium">Membership Plans</h2>
 
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setSelectedPlan(null);
+              setShowModal(true);
+            }}
             className="bg-black text-white px-4 py-2 rounded"
           >
             Create Plan
@@ -223,12 +234,16 @@ export default function AdminDashboard() {
 
           {showModal && (
             <CreatePlanModal
-              onClose={() => setShowModal(false)}
+              planData={selectedPlan}
+              onClose={() => {
+                setShowModal(false);
+                setSelectedPlan(null);
+              }}
               onSuccess={() => setRefresh(!refresh)}
             />
           )}
 
-          <PlanList key={refresh} />
+          <PlanList refresh={refresh} onEdit={handleEditPlan} />
         </div>
 
         <button
