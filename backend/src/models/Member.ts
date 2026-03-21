@@ -12,6 +12,7 @@ const memberSchema = new mongoose.Schema(
         dob: Date,
         emergencyContact: String,
         joinedAt: { type: Date, default: Date.now },
+        gym: { type: mongoose.Schema.Types.ObjectId, ref: "Gym", required: false },
     },
     { timestamps: true }
 );

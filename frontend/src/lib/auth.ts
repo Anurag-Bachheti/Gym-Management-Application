@@ -4,6 +4,7 @@ export type Role =
   | "MANAGER"
   | "TRAINER"
   | "RECEPTIONIST"
+  | "GYM_OWNER"
   | "MEMBER";
 
 export function getDashboardRoute(role: string) {
@@ -18,11 +19,17 @@ export function getDashboardRoute(role: string) {
     case "GYM_MANAGER":
       return "/manager";
 
+    case "GYM_ADMIN":
+      return "/gym-admin";
+
     case "TRAINER":
       return "/trainer";
 
     case "RECEPTIONIST":
       return "/reception";
+
+    case "GYM_OWNER":
+      return "/owner";
 
     case "MEMBER":
       return "/member";

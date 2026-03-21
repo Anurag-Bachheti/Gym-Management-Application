@@ -9,6 +9,7 @@ import userRoutes from './routes/users';
 import memberRoutes from './routes/members';
 import planRoutes from './routes/plan.routes';
 import attendanceRoutes from "./routes/attendance.routes";
+import gymRoutes from "./routes/gym.routes";
 
 connectDB();
 
@@ -30,6 +31,7 @@ app.use("/api/users", userRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/gyms', gymRoutes);
 
 // error fallback
 app.use((err: any, req: any, res: any, next: any) => {

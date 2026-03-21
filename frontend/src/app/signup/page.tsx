@@ -66,21 +66,21 @@ export default function SignupPage() {
       setLoading(false);
     }
   }
-  
-  useEffect(() => {
-  const fetchPlans = async () => {
-    try {
-      const res = await getPlans();
-      if (res.success) {
-        setPlans(res.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch plans", err);
-    }
-  };
 
-  fetchPlans();
-}, []);
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await getPlans();
+        if (res.success) {
+          setPlans(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch plans", err);
+      }
+    };
+
+    fetchPlans();
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

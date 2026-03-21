@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 
 export type UserRole =
     | "SUPER_ADMIN"
+    | "GYM_OWNER"
+    | "GYM_ADMIN"
     | "GYM_MANAGER"
     | "TRAINER"
     | "RECEPTIONIST"
@@ -28,6 +30,8 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: [
                 "SUPER_ADMIN",
+                "GYM_OWNER",
+                "GYM_ADMIN",
                 "GYM_MANAGER",
                 "TRAINER",
                 "RECEPTIONIST",
@@ -50,6 +54,7 @@ const userSchema = new mongoose.Schema(
 
         resetPasswordOTP: String,
         resetPasswordExpires: Date,
+        gym: { type: mongoose.Schema.Types.ObjectId, ref: "Gym", required: false },
     },
     { timestamps: true }
 );
