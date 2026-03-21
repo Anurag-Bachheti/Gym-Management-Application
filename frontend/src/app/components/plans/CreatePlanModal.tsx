@@ -57,8 +57,12 @@ export const CreatePlanModal = ({ onClose, onSuccess, planData }: any) => {
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={onClose} 
+        >
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden"
+                onClick={(e)=> e.stopPropagation()}
+            >
                 <div className="p-6">
                     <h2 className="text-xl font-bold mb-4">{planData ? 'Edit' : 'Create New'} Plan</h2>
                     {error && <p className="text-red-500 text-sm mb-4">{error}</p>}

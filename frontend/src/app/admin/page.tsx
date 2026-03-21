@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [refresh, setRefresh] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
+  const [showPlans, setShowPlans] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -93,7 +94,7 @@ export default function AdminDashboard() {
     setFormData({ name: user.name, email: user.email, role: user.role, plan: user.plan || "" });
     setEditingUserId(user._id);
     setShowForm(true);
-    
+
   };
 
   const handleEditPlan = (plan: any) => {
@@ -127,97 +128,102 @@ export default function AdminDashboard() {
             setEditingUserId(null);
             setFormData({ name: "", email: "", role: "", plan: "" });
           }}
+          style={{ backgroundColor: 'black', color: 'white', marginTop: '14px', padding: '8px' }}
         >
           Create User
         </button>
 
-        {showForm && (
-          <div className="bg-white p-6 rounded-lg shadow space-y-4">
-            <h2 className="text-lg font-medium">
-              {editingUserId ? "Edit User" : "Create User"}
-            </h2>
+        <div>
+          {showForm && (
+            <div className="bg-white p-6 rounded-lg shadow space-y-4">
+              <h2 className="text-lg font-medium" >
+                {editingUserId ? "Edit User" : "Create User"}
+              </h2>
 
-            <input
-              name="name"
-              placeholder="Name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
+              <input
+                name="name"
+                placeholder="Name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+              />
 
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+              />
 
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="">Select role</option>
-              <option value="SUPER_ADMIN">Admin</option>
-              <option value="GYM_MANAGER">Manager</option>
-              <option value="TRAINER">Trainer</option>
-              <option value="RECEPTIONIST">Receptionist</option>
-              <option value="MEMBER">Member</option>
-            </select>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+              >
+                <option value="">Select role</option>
+                <option value="SUPER_ADMIN">Admin</option>
+                <option value="GYM_MANAGER">Manager</option>
+                <option value="TRAINER">Trainer</option>
+                <option value="RECEPTIONIST">Receptionist</option>
+                <option value="MEMBER">Member</option>
+              </select>
 
-            <select
-              name="plan"
-              value={formData.plan}
-              onChange={handleChange}
-              disabled={formData.role !== "MEMBER"}
-              className={`w-full border rounded px-3 py-2 ${formData.role !== "MEMBER" ? "bg-gray-100 cursor-not-allowed" : ""}`}
-            >
-              <option value="">Membership Plan</option>
+              <select
+                name="plan"
+                value={formData.plan}
+                onChange={handleChange}
+                disabled={formData.role !== "MEMBER"}
+                className={`w-full border rounded px-3 py-2 ${formData.role !== "MEMBER" ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              >
+                <option value="">Membership Plan</option>
 
-              {plans.map((plan) => (
-                <option key={plan._id} value={plan._id}>
-                  {plan.name || `${plan.durationInMonths} Month${plan.durationInMonths > 1 ? "s" : ""}`} – ₹{plan.price}
-                </option>
-              ))}
-            </select>
+                {plans.map((plan) => (
+                  <option key={plan._id} value={plan._id}>
+                    {plan.name || `${plan.durationInMonths} Month${plan.durationInMonths > 1 ? "s" : ""}`} – ₹{plan.price}
+                  </option>
+                ))}
+              </select>
 
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-black text-white py-2 rounded hover:opacity-90"
-            >
-              {editingUserId ? "Update User" : "Create User"}
-            </button>
+              <button
+                onClick={handleSubmit}
+                className="w-full bg-black text-white py-2 rounded hover:opacity-90"
+              >
+                {editingUserId ? "Update User" : "Create User"}
+              </button>
 
-            {tempPassword && (
-              <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                <p className="font-bold">User Created Successfully!</p>
-                <p>
-                  Temporary Password:{" "}
-                  <span className="font-mono bg-white px-2 py-1 rounded border">
-                    {tempPassword}
-                  </span>
-                </p>
-                <p className="text-sm mt-2 font-semibold text-red-600 italic">
-                  Please share this password with the user. They will need to
-                  change it on their first login.
-                </p>
-                <button
-                  onClick={() => setTempPassword(null)}
-                  className="mt-2 text-xs underline"
-                >
-                  Dismiss
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+              {tempPassword && (
+                <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                  <p className="font-bold">User Created Successfully!</p>
+                  <p>
+                    Temporary Password:{" "}
+                    <span className="font-mono bg-white px-2 py-1 rounded border">
+                      {tempPassword}
+                    </span>
+                  </p>
+                  <p className="text-sm mt-2 font-semibold text-red-600 italic">
+                    Please share this password with the user. They will need to
+                    change it on their first login.
+                  </p>
+                  <button
+                    onClick={() => setTempPassword(null)}
+                    className="mt-2 text-xs underline"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Plan Section */}
-        <div className="bg-white p-6 rounded-lg shadow space-y-4">
-          <h2 className="text-lg font-medium">Membership Plans</h2>
+        <div className="bg-white pt-6 rounded-lg shadow space-y-4">
+          <h1 className="text-lg font-medium" style={{paddingLeft:'10px'}}>
+            Membership Plans
+          </h1>
 
           <button
             onClick={() => {
@@ -225,25 +231,32 @@ export default function AdminDashboard() {
               setShowModal(true);
             }}
             className="bg-black text-white px-4 py-2 rounded"
+            style={{marginLeft:'10px'}}
           >
             Create Plan
           </button>
+
           <div>
-            <button>Show All Plans</button>
+            <div>
+              <button onClick={() => setShowPlans(prev => !prev)} style={{paddingTop:'10px', paddingBottom: '15px', paddingLeft: '10px'}}>
+                {showPlans ? "Hide Plans" : "Show Plans"}
+              </button>
+            </div>
+
+            {showModal && selectedPlan !== "SHOW_ALL" && (
+              <CreatePlanModal
+                planData={selectedPlan}
+                onClose={() => {
+                  setShowModal(false);
+                  setSelectedPlan(null);
+                }}
+                onSuccess={() => setRefresh(!refresh)}
+              />
+            )}
           </div>
-
-          {showModal && (
-            <CreatePlanModal
-              planData={selectedPlan}
-              onClose={() => {
-                setShowModal(false);
-                setSelectedPlan(null);
-              }}
-              onSuccess={() => setRefresh(!refresh)}
-            />
+          {showPlans && (
+            <PlanList refresh={refresh} onEdit={handleEditPlan} />
           )}
-
-          <PlanList refresh={refresh} onEdit={handleEditPlan} />
         </div>
 
         <button
