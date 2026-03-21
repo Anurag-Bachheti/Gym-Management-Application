@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import * as AuthService from "../auth/auth.service";
 import User from "../models/User";
+import Member from "../models/Member";
+import { Attendance } from "../models/Attendance";
 import * as EmailService from "../services/email.service";
 import bcrypt from "bcryptjs";
 
@@ -38,15 +40,39 @@ export const signup = async (req: Request, res: Response) => {
 export const getMe = async (req: any, res: Response) => {
     try {
         const user = await AuthService.getUserById(req.user._id);
+        const userData: any = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        };
+
+        if (user.role === "MEMBER") {
+            const memberProfile = await Member.findOne({ user: user.id })
+                .populate("plan", "name");
+            if (memberProfile) {
+                const totalAttendance = await Attendance.countDocuments({
+                    user: memberProfile._id,
+                    VisitorType: "MEMBER"
+                });
+
+                const today = new Date().toISOString().split("T")[0];
+                const presenceToday = await Attendance.findOne({
+                    user: memberProfile._id,
+                    date: today,
+                    VisitorType: "MEMBER"
+                });
+
+                userData.joinedAt = memberProfile.joinedAt;
+                userData.planName = (memberProfile.plan as any)?.name || memberProfile.plan;
+                userData.totalAttendance = totalAttendance;
+                userData.attendanceToday = !!presenceToday;
+            }
+        }
+
         res.json({
             success: true,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                // plan: user.plan,
-            },
+            user: userData,
         });
     } catch (error: any) {
         res.status(404).json({

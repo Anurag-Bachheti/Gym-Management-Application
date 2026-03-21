@@ -5,6 +5,23 @@ import api from "@/lib/api";
 
 export default function WalkInSection({ onBack }: any) {
     const [view, setView] = useState<"new" | "existing" | null>(null);
+
+    // Persist view to localStorage
+    useEffect(() => {
+        const savedView = localStorage.getItem("walkinSectionView");
+        if (savedView === "new" || savedView === "existing") {
+            setView(savedView as any);
+        }
+    }, []);
+
+    const handleViewChange = (newView: "new" | "existing" | null) => {
+        setView(newView);
+        if (newView) {
+            localStorage.setItem("walkinSectionView", newView);
+        } else {
+            localStorage.removeItem("walkinSectionView");
+        }
+    };
     const [loading, setLoading] = useState(false);
     const [walkins, setWalkins] = useState<any[]>([]);
     const [formData, setFormData] = useState({
@@ -24,7 +41,7 @@ export default function WalkInSection({ onBack }: any) {
             if (res.data.success) {
                 alert("Walk-in created successfully");
                 setFormData({ name: "", phone: "", amount: "" });
-                setView("existing");
+                handleViewChange("existing");
             }
         } catch (err) {
             console.error("Failed to create walk-in", err);
@@ -57,7 +74,7 @@ export default function WalkInSection({ onBack }: any) {
         <div className="space-y-4">
             <button onClick={() => {
                 if (view) {
-                    setView(null); // go back one step
+                    handleViewChange(null); // go back one step
                 } else {
                     onBack(); // go to parent
                 }
@@ -69,13 +86,13 @@ export default function WalkInSection({ onBack }: any) {
             {!view && (
                 <div className="flex gap-4">
                     <button
-                        onClick={() => setView("existing")}
+                        onClick={() => handleViewChange("existing")}
                         className="bg-black text-white px-6 py-3 rounded-lg font-medium shadow hover:bg-gray-800 transition-all"
                     >
                         List of Walk-ins
                     </button>
                     <button
-                        onClick={() => setView("new")}
+                        onClick={() => handleViewChange("new")}
                         className="bg-black text-white px-6 py-3 rounded-lg font-medium shadow hover:bg-gray-800 transition-all"
                     >
                         Walk-in Signup
@@ -135,7 +152,7 @@ export default function WalkInSection({ onBack }: any) {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setView(null)}
+                            onClick={() => handleViewChange(null)}
                             className="w-full text-sm text-gray-500 hover:underline"
                         >
                             Cancel
@@ -148,7 +165,7 @@ export default function WalkInSection({ onBack }: any) {
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
                         <h2 className="text-xl font-bold text-gray-800">Walk-in History</h2>
-                        <button onClick={() => setView(null)} className="text-sm text-gray-500 border px-2 py-1 rounded">Close</button>
+                        <button onClick={() => handleViewChange(null)} className="text-sm text-gray-500 border px-2 py-1 rounded">Close</button>
                     </div>
 
                     {loading ? (
@@ -165,9 +182,7 @@ export default function WalkInSection({ onBack }: any) {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-green-600 font-bold">₹{entry.amount}</p>
-                                        <p className="text-[10px] text-gray-400 uppercase tracking-tighter">
-                                            {new Date(entry.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
+                                        <p className="text-sm text-gray-500">{new Date(entry.checkInTime).toLocaleString()}</p>
                                     </div>
                                 </div>
                             ))}

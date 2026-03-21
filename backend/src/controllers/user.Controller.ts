@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/User";
+import Member from "../models/Member";
 
 /**
  * CREATE USER (staff / member login)
@@ -102,4 +103,42 @@ export const deleteUser = async (req: Request, res: Response) => {
   await user.deleteOne();
 
   res.json({ message: "User permanently deleted" });
-}
+};
+
+/**
+ * UPDATE USER
+ */
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { name, email, role, isActive, plan, phone } = req.body;
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role) user.role = role.toUpperCase();
+    if (typeof isActive !== "undefined") user.isActive = isActive;
+
+    await user.save();
+
+    // If it's a member, also update the Member record if it exists
+    if (user.role === "MEMBER") {
+        const member = await Member.findOne({ user: user._id });
+        if (member) {
+            if (name) member.name = name;
+            if (email) member.email = email;
+            if (plan) member.plan = plan;
+            if (phone) member.phone = phone;
+            await member.save();
+        }
+    }
+
+    res.json(user);
+  } catch (error: any) {
+    console.error("Update user error:", error);
+    res.status(500).json({ message: "Failed to update user" });
+  }
+};

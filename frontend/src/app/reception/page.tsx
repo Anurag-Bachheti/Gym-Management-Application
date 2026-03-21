@@ -17,6 +17,9 @@ export default function ReceptionDashboard() {
   const [showRecords, setShowRecords] = useState(false);
 
   useEffect(() => {
+    const savedShow = localStorage.getItem("receptionShowRecords") === "true";
+    if (savedShow) setShowRecords(true);
+
     async function fetchProfile() {
       try {
         const res = await api.get("/auth/me");
@@ -29,6 +32,11 @@ export default function ReceptionDashboard() {
     }
     fetchProfile();
   }, []);
+
+  const handleShowRecords = () => {
+    setShowRecords(true);
+    localStorage.setItem("receptionShowRecords", "true");
+  };
 
   function formatRole(role: string) {
     return role
@@ -79,7 +87,7 @@ export default function ReceptionDashboard() {
       <div className="flex flex-col items-center py-4 space-y-4">
         {!showRecords ? (
           <button
-            onClick={() => setShowRecords(true)}
+            onClick={handleShowRecords}
             className="bg-black text-white px-8 py-3 text-lg font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-colors"
           >
             Show Records

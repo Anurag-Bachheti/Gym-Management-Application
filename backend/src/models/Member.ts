@@ -6,7 +6,7 @@ const memberSchema = new mongoose.Schema(
         name: { type: String, required: true, trim: true },
         email: { type: String, required: true, lowercase: true, trim: true},
         role: { type: String, default: "MEMBER" },
-        plan: { type: String, required: true },
+        plan: { type: mongoose.Schema.Types.ObjectId, ref: "Plan", required: true },
         phone: String,
         gender: String,
         dob: Date,

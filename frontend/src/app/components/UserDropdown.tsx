@@ -74,7 +74,7 @@ export default function UserDropdown() {
           display: "flex",
           alignItems: "center",
           gap: "10px",
-          background: "none",
+          // background: "none",
           border: "1.5px solid #e2e8f0",
           borderRadius: "9999px",
           padding: "6px 14px 6px 6px",

@@ -7,7 +7,10 @@ import DashboardLayout from "../components/DashboardLayout";
 type Member = {
     name: string;
     email: string;
-    plan: string;
+    planName?: string;
+    totalAttendance?: number;
+    joinedAt?: string;
+    attendanceToday?: boolean;
 };
 
 export default function MemberDashboard() {
@@ -22,6 +25,10 @@ export default function MemberDashboard() {
             try {
                 const res = await api.get("/auth/me");
                 setMember(res.data.user);
+                if (res.data.user.attendanceToday) {
+                    setMarked(true);
+                    setMessage("Already checked in today! Have a great workout!");
+                }
             } catch (err) {
                 console.error("Failed to load member profile");
             } finally {
@@ -74,11 +81,25 @@ export default function MemberDashboard() {
                                 <div>
                                     <p className="text-sm text-gray-400 uppercase tracking-wider font-semibold">Current Plan</p>
                                     <p className="text-xl font-bold text-gray-800">
-                                        {member.plan ? formatPlan(member.plan) : "No Active Plan"}
+                                        {member.planName || "No Active Plan"}
                                     </p>
                                 </div>
+                                <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                                    <div>
+                                        <p className="text-[10px] text-gray-400 uppercase font-bold">Joined On</p>
+                                        <p className="text-sm font-semibold text-gray-700">
+                                            {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : "N/A"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-gray-400 uppercase font-bold">Total Visits</p>
+                                        <p className="text-sm font-bold text-green-600">
+                                            {member.totalAttendance || 0} Days
+                                        </p>
+                                    </div>
+                                </div>
                                 <div className="border-t pt-4">
-                                    <p className="text-sm text-gray-500">Account: <span className="font-medium text-gray-800 tracking-tight">{member.email}</span></p>
+                                    <p className="text-xs text-gray-500">Account: <span className="font-medium text-gray-700">{member.email}</span></p>
                                 </div>
                             </div>
 
