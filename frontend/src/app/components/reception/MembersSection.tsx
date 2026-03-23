@@ -20,6 +20,20 @@ export default function MembersSection({ onBack }: any) {
 
     const handleViewChange = (newView: "list" | "create" | "edit" | null) => {
         setView(newView);
+        
+        if (newView === "create") {
+        setFormData({
+            name: "",
+            email: "",
+            role: "MEMBER",
+            phone: "",
+            plan: "",
+            totalAttendance: 0,
+            joinedAt: ""
+        });
+        setEditingMemberId(null);
+    }
+
         if (newView) {
             localStorage.setItem("membersSectionView", newView);
         } else {
