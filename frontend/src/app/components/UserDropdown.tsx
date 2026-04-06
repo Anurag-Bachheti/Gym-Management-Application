@@ -224,7 +224,15 @@ export default function UserDropdown() {
           <div style={{ padding: "6px 0" }}>
             <button
               id="dropdown-profile-btn"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                const role = user.role;
+                let rolePath = role.toLowerCase().replace(/_/g, "-");
+                if (role === "RECEPTIONIST") rolePath = "reception";
+                if (role === "SUPER_ADMIN" || role === "ADMIN") rolePath = "admin";
+                if (role === "GYM_MANAGER") rolePath = "manager";
+                router.push(`/${rolePath}`);
+              }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -251,6 +259,47 @@ export default function UserDropdown() {
                 <circle cx="12" cy="7" r="4" />
               </svg>
               My Profile
+            </button>
+
+            <button
+              id="dropdown-features-btn"
+              onClick={() => {
+                setOpen(false);
+                const role = user.role;
+                let rolePath = role.toLowerCase().replace(/_/g, "-");
+                if (role === "RECEPTIONIST") rolePath = "reception";
+                if (role === "SUPER_ADMIN" || role === "ADMIN") rolePath = "admin";
+                if (role === "GYM_MANAGER") rolePath = "manager";
+                router.push(`/${rolePath}/features`);
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                width: "100%",
+                padding: "10px 16px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontSize: 14,
+                color: "#374151",
+                textAlign: "left",
+                transition: "background 0.15s ease",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "#f8fafc")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "none")
+              }
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              Features
             </button>
 
             <div
