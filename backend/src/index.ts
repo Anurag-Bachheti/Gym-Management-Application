@@ -14,11 +14,20 @@ import gymRoutes from "./routes/gym.routes";
 connectDB();
 
 const app = express();
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
 
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true,
-}));
+      if (/^http:\/\/localhost:\d+$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true
+  })
+);
 app.use(express.json());
 
 app.get('/', (req, res) => {
