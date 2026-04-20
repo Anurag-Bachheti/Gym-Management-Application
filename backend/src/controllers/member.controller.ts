@@ -51,7 +51,18 @@ export const createMember = async (req: any, res: any) => {
  */
 export const getMembers = async (req: any, res: any) => {
   try {
-    const members = await Member.find().populate("user", "name email role").populate("plan", "name");
+
+    const {userId} = req.query;
+    let query: any = {};
+    
+    if (userId) {
+      query.user = userId;
+    }
+
+    const members = await Member.find(query)
+      .populate("user", "name email role")
+      .populate("plan", "name")
+      .populate("trainer", "name email");
     const today = new Date().toISOString().split("T")[0];
 
     // Check attendance for today
@@ -168,3 +179,59 @@ export const deleteMember = async (req: any, res: any) => {
 
   res.json({ message: "Member permanently deleted" });
 }
+
+/**
+ * ASSIGN TRAINER
+ */
+export const assignTrainer = async (req: any, res: any) => {
+  try {
+    const { trainerId } = req.body;
+
+    if (!trainerId) {
+      return res.status(400).json({ message: "trainerId is required" });
+    }
+
+    const member = await Member.findById(req.params.id);
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    const trainer = await User.findById(trainerId);
+    if (!trainer || trainer.role !== "TRAINER") {
+      return res.status(400).json({ message: "Invalid trainer" });
+    }
+
+    member.trainer = trainerId;
+    member.isTrainerAssigned = true;
+
+    await member.save();
+
+    res.json({ message: "Trainer assigned successfully", member });
+  } catch (error) {
+    console.error("Assign trainer error:", error);
+    res.status(500).json({ message: "Failed to assign trainer" });
+  }
+};
+
+/**
+ * REMOVE TRAINER
+ */
+export const removeTrainer = async (req: any, res: any) => {
+  try {
+    const member = await Member.findById(req.params.id);
+
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    member.trainer = null;
+    member.isTrainerAssigned = false;
+
+    await member.save();
+
+    res.json({ message: "Trainer removed successfully", member });
+  } catch (error) {
+    console.error("Remove trainer error:", error);
+    res.status(500).json({ message: "Failed to remove trainer" });
+  }
+};
