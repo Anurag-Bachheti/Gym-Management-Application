@@ -27,6 +27,9 @@ export default function MembersSection({ onBack }: any) {
             email: "",
             role: "MEMBER",
             phone: "",
+            gender: "",
+            dob: "",
+            emergencyContact: "",
             plan: "",
             totalAttendance: 0,
             joinedAt: ""
@@ -62,6 +65,9 @@ export default function MembersSection({ onBack }: any) {
         email: "",
         role: "MEMBER",
         phone: "",
+        gender: "",
+        dob: "",
+        emergencyContact: "",
         plan: "",
         totalAttendance: 0,
         joinedAt: ""
@@ -79,7 +85,7 @@ export default function MembersSection({ onBack }: any) {
             }
             handleViewChange("list");
             setEditingMemberId(null);
-            setFormData({ name: "", email: "", role: "MEMBER", phone: "", plan: "", totalAttendance: 0, joinedAt: "" });
+            setFormData({ name: "", email: "", role: "MEMBER", phone: "", gender: "", dob: "", emergencyContact: "", plan: "", totalAttendance: 0, joinedAt: "" });
             // Refresh list
             const res = await api.get("/members");
             setMembers(Array.isArray(res.data) ? res.data : []);
@@ -162,18 +168,30 @@ export default function MembersSection({ onBack }: any) {
                                         </span>
                                         <div className="flex gap-2">
                                             <button
-                                                onClick={() => {
-                                                    setFormData({
-                                                        name: member.name,
-                                                        email: member.email,
-                                                        role: member.role || "MEMBER",
-                                                        phone: member.phone || "",
-                                                        plan: (typeof member.plan === 'object' ? member.plan._id : member.plan) || "",
-                                                        totalAttendance: member.totalAttendance || 0,
-                                                        joinedAt: member.joinedAt
-                                                    });
-                                                    setEditingMemberId(member._id);
-                                                    handleViewChange("edit");
+                                                onClick={async () => {
+                                                    try {
+                                                        // Fetch fresh data from backend
+                                                        const res = await api.get(`/members/${member._id}`);
+                                                        const memberData = res.data;
+                                                        
+                                                        setFormData({
+                                                            name: memberData.name,
+                                                            email: memberData.email,
+                                                            role: memberData.role || "MEMBER",
+                                                            phone: memberData.phone || "",
+                                                            gender: memberData.gender || "",
+                                                            dob: memberData.dob || "",
+                                                            emergencyContact: memberData.emergencyContact || "",
+                                                            plan: (typeof memberData.plan === 'object' ? memberData.plan._id : memberData.plan) || "",
+                                                            totalAttendance: memberData.totalAttendance || 0,
+                                                            joinedAt: memberData.joinedAt
+                                                        });
+                                                        setEditingMemberId(member._id);
+                                                        handleViewChange("edit");
+                                                    } catch (err) {
+                                                        console.error("Failed to fetch member details:", err);
+                                                        alert("Failed to load member details");
+                                                    }
                                                 }}
                                                 className="text-xs px-3 py-1.5 rounded font-semibold bg-blue-600 text-white hover:bg-blue-700"
                                             >
@@ -268,6 +286,33 @@ export default function MembersSection({ onBack }: any) {
                                     placeholder="Phone"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Gender</label>
+                                <input
+                                    value={formData.gender}
+                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                    className="w-full border rounded px-3 py-2"
+                                    placeholder="Male/Female/Other"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Date of Birth</label>
+                                <input
+                                    type="date"
+                                    value={formData.dob ? formData.dob.split('T')[0] : ""}
+                                    onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Emergency Contact</label>
+                                <input
+                                    value={formData.emergencyContact}
+                                    onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                                    className="w-full border rounded px-3 py-2"
+                                    placeholder="Emergency Contact"
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -313,7 +358,7 @@ export default function MembersSection({ onBack }: any) {
                                 onClick={() => {
                                     handleViewChange(null);
                                     setEditingMemberId(null);
-                                    setFormData({ name: "", email: "", role: "MEMBER", phone: "", plan: "", totalAttendance: 0, joinedAt: "" });
+                                    setFormData({ name: "", email: "", role: "MEMBER", phone: "", gender: "", dob: "", emergencyContact: "", plan: "", totalAttendance: 0, joinedAt: "" });
                                 }}
                                 className="w-full mt-2 text-sm text-gray-500"
                             >

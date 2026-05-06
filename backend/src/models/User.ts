@@ -55,6 +55,9 @@ const userSchema = new mongoose.Schema(
         resetPasswordOTP: String,
         resetPasswordExpires: Date,
         gym: { type: mongoose.Schema.Types.ObjectId, ref: "Gym", required: false },
+        plan: { type: mongoose.Schema.Types.ObjectId, ref: "Plan", required: false },
+        trainer: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+        isTrainerAssigned: { type: Boolean, default: false },
     },
     { timestamps: true }
 );

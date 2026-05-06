@@ -10,6 +10,7 @@ import { getPlans } from "@/services/plan.service";
 
 type User = {
   _id: string;
+  id?: string;
   name: string;
   email: string;
   role: string;
@@ -79,7 +80,16 @@ export default function AdminFeatures() {
         if (res.data.temporaryPassword) {
           setTempPassword(res.data.temporaryPassword);
         }
-        setUsers((prev) => [...prev, res.data.user || res.data]);
+        // setUsers((prev) => [...prev, res.data.user || res.data]);
+        const createdUser = res.data.user || res.data;
+
+        setUsers((prev) => [
+          ...prev,
+          {
+            ...createdUser,
+            _id: createdUser._id || createdUser.id,
+          },
+        ]);
       }
 
       // Reset UI state
@@ -120,12 +130,12 @@ export default function AdminFeatures() {
         console.error("Failed to fetch plans:", error);
       }
     }
-    
+
     // If user is a MEMBER, fetch member data to get plan details
     let planId = "";
     if (user.role === "MEMBER") {
       try {
-        const memberRes = await api.get(`/members?userId=${user._id}`);
+        const memberRes = await api.get(`/members?userId=${user._id || user.id}`);
         const member = memberRes.data[0];
         if (member && member.plan) {
           // Extract plan ID from populated plan object or use direct ID
@@ -135,9 +145,9 @@ export default function AdminFeatures() {
         console.error("Failed to fetch member data:", error);
       }
     }
-     planId = String(planId);
+    planId = String(planId);
     setFormData({ name: user.name, email: user.email, role: user.role, plan: planId });
-    setEditingUserId(user._id);
+    setEditingUserId(user._id || user.id || "");
     setShowForm(true);
   };
 
@@ -312,7 +322,10 @@ export default function AdminFeatures() {
                             {users
                               .filter((u) => u.role === "TRAINER")
                               .map((trainer) => (
-                                <option key={trainer._id} value={trainer._id}>
+                                <option 
+                                  key={trainer._id || trainer._id}
+                                  value={trainer._id || trainer.id}
+                                >  
                                   {trainer.name}
                                 </option>
                               ))}

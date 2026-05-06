@@ -21,6 +21,8 @@ export const createMember = async (req: any, res: any) => {
     // Optional: normalize email even more
     const normalizedEmail = email.toLowerCase().trim();
 
+    const gymId = req.user?.gym; // Get gym from authenticated user
+
     const member = await Member.create({
       name,
       email: normalizedEmail,
@@ -30,6 +32,7 @@ export const createMember = async (req: any, res: any) => {
       emergencyContact,
       user,
       plan,
+      gym: gymId,
     });
 
     return res.status(201).json(member);
@@ -51,56 +54,82 @@ export const createMember = async (req: any, res: any) => {
  */
 export const getMembers = async (req: any, res: any) => {
   try {
-
-    const {userId} = req.query;
+    const userRole = req.user?.role;
+    const userId = req.user?._id;
+    const userGym = req.user?.gym;
     let query: any = {};
     
-    if (userId) {
+    if (userRole === "MEMBER" && userId) {
       query.user = userId;
+    } else if ((userRole === "GYM_MANAGER" || userRole === "RECEPTIONIST")) {
+      if (userGym) {
+        query.gym = userGym;
+      }
     }
+
 
     const members = await Member.find(query)
       .populate("user", "name email role")
-      .populate("plan", "name")
+      .populate("plan", "name durationInMonths price")
       .populate("trainer", "name email");
-    const today = new Date().toISOString().split("T")[0];
 
-    // Check attendance for today
-    const attendanceRecords = await Attendance.find({ 
-        date: today, 
-        VisitorType: "MEMBER" 
-    });
-    
-    // Member attendance uses Member._id as the ID in the 'user' field
-    const presentMemberIds = attendanceRecords.map(a => a.user?.toString());
+    if (members.length === 0) {
+      console.warn("⚠️ No members found!");
+      return res.json([]);
+    }
 
-    // Get total attendance counts for all members
-    const attendanceCounts = await Attendance.aggregate([
-        { $match: { VisitorType: "MEMBER" } },
-        { $group: { _id: "$user", count: { $sum: 1 } } }
-    ]);
+    try {
+      const today = new Date().toISOString().split("T")[0];
 
-    const countMap: any = {};
-    attendanceCounts.forEach(item => {
-        countMap[item._id?.toString()] = item.count;
-    });
+      // Check attendance for today
+      const attendanceRecords = await Attendance.find({ 
+          date: today, 
+          VisitorType: "MEMBER" 
+      });
+      
+      // Member attendance uses Member._id as the ID in the 'user' field
+      const presentMemberIds = attendanceRecords.map(a => a.user?.toString());
 
-    const data = members.map(m => {
-        const memberObj = m.toObject();
-        const memberId = m._id.toString();
-        return {
-            ...memberObj,
-            // If plan is populated, we can show its name
-            planName: (memberObj.plan as any)?.name || memberObj.plan, 
-            attendanceToday: presentMemberIds.includes(memberId),
-            totalAttendance: countMap[memberId] || 0
-        };
-    });
+      // Get total attendance counts for all members
+      const attendanceCounts = await Attendance.aggregate([
+          { $match: { VisitorType: "MEMBER" } },
+          { $group: { _id: "$user", count: { $sum: 1 } } }
+      ]);
 
-    res.json(data);
+      const countMap: any = {};
+      attendanceCounts.forEach(item => {
+          countMap[item._id?.toString()] = item.count;
+      });
+
+      const data = members.map(m => {
+          const memberObj = m.toObject();
+          const memberId = m._id.toString();
+          return {
+              ...memberObj,
+              planName: (memberObj.plan as any)?.name || memberObj.plan, 
+              attendanceToday: presentMemberIds.includes(memberId),
+              totalAttendance: countMap[memberId] || 0
+          };
+      });
+
+      res.json(data);
+    } catch (attendanceError) {
+      console.error("❌ Error fetching attendance data:", attendanceError);
+      // Return members without attendance data if attendance fetch fails
+      const data = members.map(m => {
+          const memberObj = m.toObject();
+          return {
+              ...memberObj,
+              planName: (memberObj.plan as any)?.name || memberObj.plan,
+              attendanceToday: false,
+              totalAttendance: 0
+          };
+      });
+      res.json(data);
+    }
   } catch (error) {
-    console.error("Fetch members with attendance error:", error);
-    res.status(500).json({ message: "Failed to fetch members" });
+    console.error("❌ Fetch members error:", error);
+    res.status(500).json({ message: "Failed to fetch members", error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -109,9 +138,10 @@ export const getMembers = async (req: any, res: any) => {
  * GET MEMBER BY ID
  */
 export const getMemberById = async (req: any, res: any) => {
-  const member = await Member.findById(req.params.id)
-    .populate("user", "name email role")
-    .populate("plan", "name");
+  try {
+    const member = await Member.findById(req.params.id)
+      .populate("user", "name email role")
+      .populate("plan", "name durationInMonths price");
 
   if (!member) {
     return res.status(404).json({ message: "Member not found" });
@@ -122,11 +152,15 @@ export const getMemberById = async (req: any, res: any) => {
     VisitorType: "MEMBER"
   });
 
-  const memberObj = member.toObject();
-  res.json({
-    ...memberObj,
-    totalAttendance: attendanceCount
-  });
+    const memberObj = member.toObject();
+    res.json({
+      ...memberObj,
+      totalAttendance: attendanceCount
+    });
+  } catch (error) {
+    console.error("Get member by ID error:", error);
+    res.status(500).json({ message: "Failed to fetch member" });
+  }
 };
 
 /**

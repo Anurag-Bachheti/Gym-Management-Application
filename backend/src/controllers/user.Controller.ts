@@ -63,7 +63,7 @@ export const getUsers = async (req: Request, res: Response) => {
   const filter: any = {};
   if (role) filter.role = role;
 
-  const users = await User.find(filter).select("-password");
+  const users = await User.find(filter).select("-password").populate("plan").populate("trainer");
 
   res.json(users);
 };
@@ -72,7 +72,7 @@ export const getUsers = async (req: Request, res: Response) => {
  * GET USER BY ID
  */
 export const getUserById = async (req: Request, res: Response) => {
-  const user = await User.findById(req.params.id).select("-password");
+  const user = await User.findById(req.params.id).select("-password").populate("plan").populate("trainer");
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
@@ -110,7 +110,7 @@ export const deleteUser = async (req: Request, res: Response) => {
  */
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, role, isActive, plan, phone } = req.body;
+    const { name, email, role, isActive, plan, trainer, phone } = req.body;
     const user = await User.findById(req.params.id);
 
     if (!user) {
@@ -121,6 +121,8 @@ export const updateUser = async (req: Request, res: Response) => {
     if (email) user.email = email;
     if (role) user.role = role.toUpperCase();
     if (typeof isActive !== "undefined") user.isActive = isActive;
+    if (plan) user.plan = plan;
+    if (trainer) user.trainer = trainer;
 
     await user.save();
 
@@ -131,6 +133,10 @@ export const updateUser = async (req: Request, res: Response) => {
             if (name) member.name = name;
             if (email) member.email = email;
             if (plan) member.plan = plan;
+            if (trainer) {
+                member.trainer = trainer;
+                member.isTrainerAssigned = true;
+            }
             if (phone) member.phone = phone;
             await member.save();
         }
