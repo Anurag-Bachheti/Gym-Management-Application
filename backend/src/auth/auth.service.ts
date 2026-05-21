@@ -58,12 +58,14 @@ export const signup = async (userData: any) => {
     });
 
     // Create Member
-    await Member.create({
+    const memberData: any = {
         user: user._id,
         name,
         email,
-        plan,
-    });
+    };
+    if (plan) memberData.plan = plan;
+
+    await Member.create(memberData);
 
     return {
         id: user._id,

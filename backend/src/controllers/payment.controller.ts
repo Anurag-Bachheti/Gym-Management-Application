@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_...", {
 
 export const createCheckoutSession = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { planId } = req.body;
+        const { planId, method = "card" } = req.body;
         const user = (req as any).user;
 
         if (!user || user.role !== "MEMBER") {
@@ -23,15 +23,33 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
             return;
         }
 
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items: [
-                {
-                    price: (plan as any).stripePriceId,
-                    quantity: 1,
+        // UPI may not support subscription mode depending on region and Stripe config. 
+        // We will configure one-time payment for UPI, and subscription for card if required, 
+        // or just stick to one-time payment if mode is payment.
+        // But since you want INR, we will conditionally set recurring only for 'card'
+        
+        const isUPI = method === "upi";
+
+        const lineItem: any = {
+            price_data: {
+                currency: "inr",
+                product_data: {
+                    name: plan.name,
+                    description: plan.description || "Gym Membership",
                 },
-            ],
-            mode: "subscription",
+                unit_amount: Math.round(plan.price * 100), // in paise
+            },
+            quantity: 1,
+        };
+
+        if (!isUPI) {
+            lineItem.price_data.recurring = { interval: "month", interval_count: plan.durationInMonths || 1 };
+        }
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: [method],
+            line_items: [lineItem],
+            mode: isUPI ? "payment" : "subscription",
             success_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/member?success=true&planId=${planId}&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/member?canceled=true`,
             customer_email: user.email,

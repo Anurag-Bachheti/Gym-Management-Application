@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import PasswordInput from "../components/PasswordInput";
-import { getPlans } from "@/services/plan.service";
+// import { getPlans } from "@/services/plan.service";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -14,12 +14,12 @@ export default function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    plan: "",
+    // plan: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [plans, setPlans] = useState<any[]>([]);
+  // const [plans, setPlans] = useState<any[]>([]);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -31,9 +31,9 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
-    const { name, email, password, confirmPassword, plan } = form;
+    const { name, email, password, confirmPassword } = form;
 
-    if (!name || !email || !password || !confirmPassword || !plan) {
+    if (!name || !email || !password || !confirmPassword) {
       setError("All fields are required");
       return;
     }
@@ -55,7 +55,6 @@ export default function SignupPage() {
         name,
         email,
         password,
-        plan,
       });
 
       console.log("SIGNUP SUCCESS:", res.data);
@@ -67,20 +66,20 @@ export default function SignupPage() {
     }
   }
 
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const res = await getPlans();
-        if (res.success) {
-          setPlans(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch plans", err);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchPlans = async () => {
+  //     try {
+  //       const res = await getPlans();
+  //       if (res.success) {
+  //         setPlans(res.data);
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to fetch plans", err);
+  //     }
+  //   };
 
-    fetchPlans();
-  }, []);
+  //   fetchPlans();
+  // }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -148,7 +147,7 @@ export default function SignupPage() {
         </div>
 
         {/* Plan */}
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium mb-1">
             Membership Plan
           </label>
@@ -165,7 +164,7 @@ export default function SignupPage() {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
 
         <button
           type="submit"
