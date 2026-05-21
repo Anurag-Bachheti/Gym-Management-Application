@@ -8,8 +8,8 @@ const router = express.Router();
 // Create a new plan (Only Super Admin)
 router.post('/', protect, authorize('SUPER_ADMIN'), createPlan);
 
-// Get all plans (Accessible by Admin, Manager, and Receptionist)
-router.get('/', protect, authorize('SUPER_ADMIN', 'GYM_MANAGER', 'RECEPTIONIST'), getPlans);
+// Get all plans (Accessible by Admin, Manager, Receptionist, and Member)
+router.get('/', protect, authorize('SUPER_ADMIN', 'GYM_MANAGER', 'RECEPTIONIST', 'MEMBER'), getPlans);
 router.put('/:id', protect, authorize('SUPER_ADMIN'), updatePlan);
 router.delete('/:id', protect, authorize('SUPER_ADMIN'), deletePlan);
 

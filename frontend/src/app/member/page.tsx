@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import DashboardLayout from "../components/DashboardLayout";
 
@@ -13,30 +14,86 @@ type Member = {
     attendanceToday?: boolean;
 };
 
-export default function MemberDashboard() {
+function MemberDashboardInner() {
+    const searchParams = useSearchParams();
     const [member, setMember] = useState<Member | null>(null);
     const [loading, setLoading] = useState(true);
     const [marking, setMarking] = useState(false);
     const [marked, setMarked] = useState(false);
     const [message, setMessage] = useState("");
+    const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+    const [plans, setPlans] = useState<any[]>([]);
+    const [loadingPlans, setLoadingPlans] = useState(false);
+    const [purchasing, setPurchasing] = useState<string | null>(null);
+    const [successMsg, setSuccessMsg] = useState(false);
 
     useEffect(() => {
-        async function fetchProfile() {
-            try {
-                const res = await api.get("/auth/me");
-                setMember(res.data.user);
-                if (res.data.user.attendanceToday) {
-                    setMarked(true);
-                    setMessage("Already checked in today! Have a great workout!");
+        const success = searchParams.get("success");
+        const sessionId = searchParams.get("session_id");
+        const planId = searchParams.get("planId");
+
+        async function verifyAndFetchProfile() {
+            if (success === "true" && sessionId && planId) {
+                setSuccessMsg(true);
+                try {
+                    await api.post("/payment/verify", { sessionId, planId });
+                    // After verifying, we want to fetch the updated profile immediately
+                    const updatedProfile = await api.get("/auth/me");
+                    setMember(updatedProfile.data.user);
+                } catch (err) {
+                    console.error("Payment verification failed", err);
                 }
-            } catch (err) {
-                console.error("Failed to load member profile");
-            } finally {
-                setLoading(false);
+            } else {
+                try {
+                    const res = await api.get("/auth/me");
+                    setMember(res.data.user);
+                    if (res.data.user.attendanceToday) {
+                        setMarked(true);
+                        setMessage("Already checked in today! Have a great workout!");
+                    }
+                } catch (err) {
+                    console.error("Failed to load member profile");
+                }
             }
+            setLoading(false);
         }
-        fetchProfile();
-    }, []);
+        verifyAndFetchProfile();
+    }, [searchParams]);
+
+    const fetchPlans = async () => {
+        setLoadingPlans(true);
+        try {
+            const res = await api.get("/plans");
+            let fetchedPlans = [];
+            if (Array.isArray(res.data.data)) {
+                fetchedPlans = res.data.data;
+            } else if (Array.isArray(res.data)) {
+                fetchedPlans = res.data;
+            }
+            setPlans(fetchedPlans);
+            setIsSubscriptionModalOpen(true);
+        } catch (err) {
+            console.error("Failed to fetch plans", err);
+            alert("Could not load plans");
+        } finally {
+            setLoadingPlans(false);
+        }
+    };
+
+    const handleBuyNow = async (planId: string) => {
+        setPurchasing(planId);
+        try {
+            const res = await api.post("/payment/create-checkout-session", { planId });
+            if (res.data.url) {
+                window.location.href = res.data.url;
+            }
+        } catch (err: any) {
+            console.error("Payment error", err);
+            alert(err.response?.data?.message || "Failed to initiate payment");
+        } finally {
+            setPurchasing(null);
+        }
+    };
 
     const handleMarkAttendance = async () => {
         setMarking(true);
@@ -69,7 +126,12 @@ export default function MemberDashboard() {
                     Failed to load member data
                 </div>
             ) : (
-                <div className="max-w-3xl mx-auto space-y-6">
+                <div className="max-w-3xl mx-auto space-y-6 relative">
+                    {successMsg && (
+                        <div className="bg-green-100 text-green-800 p-4 rounded-xl shadow-sm text-center font-semibold mb-4">
+                            Payment Successful! Your account has been updated.
+                        </div>
+                    )}
                     <div className="bg-white rounded-xl shadow p-8">
                         <h1 className="text-3xl font-bold mb-2">
                             Welcome, <span className="text-blue-600">{member.name}</span>
@@ -78,11 +140,20 @@ export default function MemberDashboard() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <div>
-                                    <p className="text-sm text-gray-400 uppercase tracking-wider font-semibold">Current Plan</p>
-                                    <p className="text-xl font-bold text-gray-800">
-                                        {member.planName || "No Active Plan"}
-                                    </p>
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <p className="text-sm text-gray-400 uppercase tracking-wider font-semibold">Current Plan</p>
+                                        <p className="text-xl font-bold text-gray-800">
+                                            {member.planName || "No Active Plan"}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={fetchPlans}
+                                        disabled={loadingPlans}
+                                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                                    >
+                                        {loadingPlans ? "Loading..." : (member.planName ? "Upgrade / Downgrade Plan" : "Buy Subscription")}
+                                    </button>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 border-t pt-4">
                                     <div>
@@ -124,8 +195,77 @@ export default function MemberDashboard() {
                             </div>
                         </div>
                     </div>
+
+                    {isSubscriptionModalOpen && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-8 max-h-[90vh] overflow-y-auto relative mt-20 mb-10">
+                                <button
+                                    onClick={() => setIsSubscriptionModalOpen(false)}
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-800"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+
+                                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Available Membership Plans</h2>
+
+                                {plans.length === 0 ? (
+                                    <p className="text-center text-gray-500">No plans available at the moment.</p>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {plans.map((plan) => {
+                                            const isCurrentPlan = plan.name === member.planName;
+                                            return (
+                                                <div key={plan._id} className={`border ${isCurrentPlan ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-200'} rounded-xl p-6 flex flex-col hover:shadow-xl transition-shadow bg-gray-50 relative`}>
+                                                    {isCurrentPlan && (
+                                                        <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+                                                            Current Plan
+                                                        </span>
+                                                    )}
+                                                    <h3 className="text-xl font-bold text-gray-800 mb-2">{formatPlan(plan.name)}</h3>
+                                                    <div className="mb-4">
+                                                        <span className="text-3xl font-extrabold text-indigo-600">${plan.price}</span>
+                                                        <span className="text-gray-500 text-sm"> / {plan.durationInMonths} month(s)</span>
+                                                    </div>
+                                                    <p className="text-gray-600 text-sm mb-6 italic">"{plan.description || "Get access to our premium facilities and workout equipment."}"</p>
+
+                                                    {plan.features && plan.features.length > 0 && (
+                                                        <ul className="mb-6 flex-grow space-y-2">
+                                                            {plan.features.map((feature: string, idx: number) => (
+                                                                <li key={idx} className="flex items-start text-sm text-gray-600">
+                                                                    <svg className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                                                    <span>{feature}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+
+                                                    {!plan.features || plan.features.length === 0 ? <div className="flex-grow"></div> : null}
+
+                                                    <button
+                                                        onClick={() => handleBuyNow(plan._id)}
+                                                        disabled={purchasing === plan._id || isCurrentPlan}
+                                                        className={`w-full font-bold py-3 rounded-lg transition-colors disabled:opacity-50 ${isCurrentPlan ? 'bg-green-100 text-green-700 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                                    >
+                                                        {purchasing === plan._id ? "Processing..." : (isCurrentPlan ? "Active" : "Buy Now")}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </DashboardLayout>
+    );
+}
+
+export default function MemberPage() {
+    return (
+        <Suspense fallback={<div className="min-h-[60vh] flex items-center justify-center">Loading...</div>}>
+            <MemberDashboardInner />
+        </Suspense>
     );
 }

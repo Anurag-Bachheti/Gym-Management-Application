@@ -34,6 +34,8 @@ app.get('/', (req, res) => {
   res.send('Gym Management System is running');
 });
 
+import paymentRoutes from "./routes/payment.routes";
+
 // routes
 app.use('/api/auth', authRoutes);
 app.use("/api/users", userRoutes);
@@ -41,6 +43,7 @@ app.use('/api/members', memberRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/gyms', gymRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // error fallback
 app.use((err: any, req: any, res: any, next: any) => {

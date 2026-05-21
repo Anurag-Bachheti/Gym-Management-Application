@@ -27,6 +27,9 @@ const planSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        stripePriceId: {
+            type: String,
+        },
     },
     { timestamps: true }
 );

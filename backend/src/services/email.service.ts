@@ -9,6 +9,8 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendOTP = async (email: string, otp: string) => {
+    // Log OTP to console for easy testing in development
+    console.log(`\n\n=== DEVELOPMENT OTP FOR ${email}: ${otp} ===\n\n`);
 
     const mailOptions = {
         from: `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,

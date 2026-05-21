@@ -266,23 +266,6 @@ export default function AdminFeatures() {
                       <option value="MEMBER">Member</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Plan (Members Only)</label>
-                    <select
-                      name="plan"
-                      value={formData.plan}
-                      onChange={handleChange}
-                      disabled={formData.role !== "MEMBER"}
-                      className={`w-full border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition-all ${formData.role !== "MEMBER" ? "bg-gray-50 cursor-not-allowed opacity-50" : ""}`}
-                    >
-                      <option value="">Membership Plan</option>
-                      {plans.map((plan) => (
-                        <option key={plan._id} value={plan._id}>
-                          {plan.name || `${plan.durationInMonths} Month`} – ₹{plan.price}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
 
                 {/* Assign Trainer */}
@@ -322,10 +305,10 @@ export default function AdminFeatures() {
                             {users
                               .filter((u) => u.role === "TRAINER")
                               .map((trainer) => (
-                                <option 
+                                <option
                                   key={trainer._id || trainer._id}
                                   value={trainer._id || trainer.id}
-                                >  
+                                >
                                   {trainer.name}
                                 </option>
                               ))}
