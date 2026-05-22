@@ -94,6 +94,10 @@ export const verifyPayment = async (req: Request, res: Response): Promise<void> 
             const memberProfile = await Member.findOne({ user: user._id });
             if (memberProfile) {
                 memberProfile.plan = plan._id;
+                memberProfile.planStartDate = new Date();
+                if (session.subscription) {
+                    memberProfile.stripeSubscriptionId = session.subscription as string;
+                }
                 await memberProfile.save();
             } else {
                 // If member profile doesn't exist, create one
@@ -103,6 +107,8 @@ export const verifyPayment = async (req: Request, res: Response): Promise<void> 
                     email: user.email,
                     role: user.role,
                     plan: plan._id,
+                    planStartDate: new Date(),
+                    stripeSubscriptionId: session.subscription ? session.subscription as string : undefined,
                 });
             }
 
@@ -113,5 +119,56 @@ export const verifyPayment = async (req: Request, res: Response): Promise<void> 
     } catch (error: any) {
         console.error("Stripe Verify Error:", error);
         res.status(500).json({ message: error.message || "Failed to verify payment" });
+    }
+};
+
+export const cancelSubscription = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const user = (req as any).user;
+
+        if (!user || user.role !== "MEMBER") {
+            res.status(403).json({ message: "Only members can cancel subscriptions." });
+            return;
+        }
+
+        const Member = require("../models/Member").default;
+        const memberProfile = await Member.findOne({ user: user._id });
+
+        if (!memberProfile || !memberProfile.plan) {
+            res.status(400).json({ message: "No active plan found to cancel." });
+            return;
+        }
+
+        // Calculate if within 3 days
+        const startDate = memberProfile.planStartDate ? new Date(memberProfile.planStartDate) : new Date();
+        const now = new Date();
+        const diffInMs = now.getTime() - startDate.getTime();
+        const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+        
+        const isEligibleForRefund = diffInDays <= 3;
+
+        // Cancel in Stripe if it's a subscription
+        if (memberProfile.stripeSubscriptionId) {
+            await stripe.subscriptions.update(memberProfile.stripeSubscriptionId, {
+                cancel_at_period_end: true,
+            });
+        }
+
+        // We mark it as cancelled at period end in our DB so we know not to renew or just to show the UI
+        memberProfile.cancelAtPeriodEnd = true;
+        await memberProfile.save();
+
+        let message = "";
+        if (isEligibleForRefund) {
+            message = "Subscription will be cancelled at the end of the billing period. You are allowed a refund as you cancelled within 3 days.";
+            // Optionally: Implement actual Stripe Refund logic here
+        } else {
+            message = "Subscription will be cancelled at the end of the billing period. Your amount will not be refunded & you can avail the features of this subscription till it ends.";
+        }
+
+        res.status(200).json({ success: true, message, isEligibleForRefund });
+    } catch (error: any) {
+        console.error("Cancel Subscription Error:", error);
+        res.status(500).json({ message: error.message || "Failed to cancel subscription" });
     }
 };

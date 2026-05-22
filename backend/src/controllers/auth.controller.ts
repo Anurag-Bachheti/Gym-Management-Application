@@ -66,6 +66,7 @@ export const getMe = async (req: any, res: Response) => {
                 userData.planName = (memberProfile.plan as any)?.name || memberProfile.plan;
                 userData.totalAttendance = totalAttendance;
                 userData.attendanceToday = !!presenceToday;
+                userData.cancelAtPeriodEnd = memberProfile.cancelAtPeriodEnd || false;
             }
         }
 

@@ -12,6 +12,7 @@ type Member = {
     totalAttendance?: number;
     joinedAt?: string;
     attendanceToday?: boolean;
+    cancelAtPeriodEnd?: boolean;
 };
 
 function MemberDashboardInner() {
@@ -147,15 +148,40 @@ function MemberDashboardInner() {
                                         <p className="text-sm text-gray-400 uppercase tracking-wider font-semibold">Current Plan</p>
                                         <p className="text-xl font-bold text-gray-800">
                                             {member.planName || "No Active Plan"}
+                                            {member.cancelAtPeriodEnd && (
+                                                <span className="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full uppercase tracking-wide font-semibold align-middle">Cancels at Period End</span>
+                                            )}
                                         </p>
                                     </div>
-                                    <button
-                                        onClick={fetchPlans}
-                                        disabled={loadingPlans}
-                                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-                                    >
-                                        {loadingPlans ? "Loading..." : (member.planName ? "Upgrade / Downgrade Plan" : "Buy Subscription")}
-                                    </button>
+                                    <div className="flex space-x-2">
+                                        {member.planName && !member.cancelAtPeriodEnd && (
+                                            <button
+                                                onClick={async () => {
+                                                    if (window.confirm("Are you sure you want to cancel your subscription?")) {
+                                                        try {
+                                                            const res = await api.post("/payment/cancel-subscription");
+                                                            alert(res.data.message);
+                                                            // reload profile
+                                                            const updatedProfile = await api.get("/auth/me");
+                                                            setMember(updatedProfile.data.user);
+                                                        } catch (err: any) {
+                                                            alert(err.response?.data?.message || "Failed to cancel subscription.");
+                                                        }
+                                                    }
+                                                }}
+                                                className="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors"
+                                            >
+                                                Cancel Plan
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={fetchPlans}
+                                            disabled={loadingPlans}
+                                            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                                        >
+                                            {loadingPlans ? "Loading..." : (member.planName ? "Upgrade / Downgrade Plan" : "Buy Subscription")}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 border-t pt-4">
                                     <div>
